@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Linq;
 
 namespace HigherLowerGame
 {
@@ -65,6 +67,10 @@ namespace HigherLowerGame
                 {
                     Console.Clear();
                     Console.WriteLine($"Game Over. Final Score: {score}");
+                    Player player = PlayerDetails(score, Player.GetDateTime());
+                    string databaseFilePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\SoftwareEngCoursework\HigherLowerGame\HigherLowerGame\bin\Debug\PlayerScores.txt";
+                    addRecord(player.PlayerName, player.PlayerScore, player.Date, databaseFilePath);
+                    dispalyHighScore(databaseFilePath);
                 }
             }
             PlayGame();
@@ -73,8 +79,7 @@ namespace HigherLowerGame
 
         static int GenerateRandomNumber()
         {
-            int randomNumber = random.Next(numberOfMovies + 1);
-            // the total number of movies is increased by 1 to capture the all the data when using the random module
+            int randomNumber = random.Next(numberOfMovies);
             return randomNumber;
         }
 
@@ -102,6 +107,47 @@ namespace HigherLowerGame
             return output;
         }
 
+        static Player PlayerDetails(int score, DateTime dateTime)
+        {
+            Console.Write("Enter your name: ");
+            string name = Console.ReadLine();
+            Player player = new Player(name, score, dateTime);
+            Console.WriteLine();
+            string header = "Player Name     Player Score       Date/Time";
+            Console.WriteLine(header);
+            Console.WriteLine($"Player Score: " +
+                $"\n{player.PlayerName}            " +
+                $"{player.PlayerScore}              " +
+                $"{player.Date}");
+            return player;
+        }
 
+        static void addRecord(string playerName, int playerScore, DateTime dateTime, string filePath)
+        {
+            StreamWriter newRecord = new StreamWriter(filePath, true);
+            newRecord.WriteLine($"{playerName}, {playerScore}, {dateTime}");
+            newRecord.Close();
+        }
+
+        static void dispalyHighScore(string filepath)
+        {
+            string[] playerScores = File.ReadAllLines(filepath);
+            List<string> playerName = new List<string>();
+            List<int> playerScore = new List<int>();
+            List<DateTime> dateTime = new List<DateTime>();
+            //Dictionary<int, Player> playerScoreDatabase = new Dictionary<int, Player>();
+            for (int i = 2; i < playerScores.Length; i++)
+            {
+                string[] rowData = playerScores[i].Split(',');
+                playerName.Add(rowData[0]);
+                playerScore.Add(Convert.ToInt32(rowData[1]));
+                dateTime.Add(Convert.ToDateTime(rowData[2]));
+            }
+            int indexNumberOfMaxScore = playerScore.IndexOf(playerScore.Max());
+            Console.WriteLine($"High Score: " +
+                $"\n{playerName[indexNumberOfMaxScore]}        " +
+                $"{playerScore[indexNumberOfMaxScore]}         " +
+                $"{dateTime[indexNumberOfMaxScore]}");
+        }
     }
 }
