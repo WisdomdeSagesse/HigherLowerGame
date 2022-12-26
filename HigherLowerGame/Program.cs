@@ -56,8 +56,8 @@ namespace HigherLowerGame
                         endGame = true;
                     }
                 }
-                Console.Write("Do you wish to play again? Enter 'Y' for yes and 'N' for NO: ");
-                char response = Char.ToLower(Console.ReadKey().KeyChar);
+                string display = "Do you wish to play again? Enter 'Y' for yes and 'N' for NO: ";
+                char response = VaidateReplayGameInput(display);
                 if (response == 'y')
                 {
                     Console.Clear();
@@ -68,9 +68,9 @@ namespace HigherLowerGame
                     Console.Clear();
                     Console.WriteLine($"Game Over. Final Score: {score}");
                     Player player = PlayerDetails(score, Player.GetDateTime());
-                    string databaseFilePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\SoftwareEngCoursework\HigherLowerGame\HigherLowerGame\bin\Debug\PlayerScores.txt";
-                    addRecord(player.PlayerName, player.PlayerScore, player.Date, databaseFilePath);
-                    dispalyHighScore(databaseFilePath);
+                    filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\SoftwareEngCoursework\HigherLowerGame\HigherLowerGame\bin\Debug\PlayerScores.txt";
+                    addRecord(player.PlayerName, player.PlayerScore, player.Date, filePath);
+                    dispalyHighScore(filePath);
                 }
             }
             PlayGame();
@@ -92,8 +92,9 @@ namespace HigherLowerGame
 
         static bool CompareAnswer(int movieARank, int movieBRank)
         {
-            Console.Write("Which movie has a higher IMDB rank. Type A or B: ");
-            char playerInput = Char.ToLower(Console.ReadKey().KeyChar);
+            string display = "Which movie has a higher IMDB rank. Type A or B: ";
+            char playerInput = VaidateAnswerInput(display);
+            Console.WriteLine();
             Console.WriteLine();
             bool output;
             if (playerInput == 'a')
@@ -124,9 +125,12 @@ namespace HigherLowerGame
 
         static void addRecord(string playerName, int playerScore, DateTime dateTime, string filePath)
         {
-            StreamWriter newRecord = new StreamWriter(filePath, true);
-            newRecord.WriteLine($"{playerName}, {playerScore}, {dateTime}");
-            newRecord.Close();
+            if(playerScore > 0)
+            {
+                StreamWriter newRecord = new StreamWriter(filePath, true);
+                newRecord.WriteLine($"{playerName}, {playerScore}, {dateTime}");
+                newRecord.Close();
+            }
         }
 
         static void dispalyHighScore(string filepath)
@@ -135,7 +139,7 @@ namespace HigherLowerGame
             List<string> playerName = new List<string>();
             List<int> playerScore = new List<int>();
             List<DateTime> dateTime = new List<DateTime>();
-            //Dictionary<int, Player> playerScoreDatabase = new Dictionary<int, Player>();
+        
             for (int i = 2; i < playerScores.Length; i++)
             {
                 string[] rowData = playerScores[i].Split(',');
@@ -143,11 +147,41 @@ namespace HigherLowerGame
                 playerScore.Add(Convert.ToInt32(rowData[1]));
                 dateTime.Add(Convert.ToDateTime(rowData[2]));
             }
+
             int indexNumberOfMaxScore = playerScore.IndexOf(playerScore.Max());
             Console.WriteLine($"High Score: " +
                 $"\n{playerName[indexNumberOfMaxScore]}        " +
                 $"{playerScore[indexNumberOfMaxScore]}         " +
                 $"{dateTime[indexNumberOfMaxScore]}");
+        }
+
+        static char VaidateAnswerInput(string displayAction)
+        {
+            char playerInput;
+            char[] validResponses = {'a', 'b'};
+            do
+            {
+                Console.WriteLine(displayAction);
+                playerInput = Char.ToLower(Console.ReadKey().KeyChar);
+                Console.WriteLine();
+            }
+            while (!validResponses.Contains(playerInput));
+           
+            return playerInput;
+        }
+        static char VaidateReplayGameInput(string displayAction)
+        {
+            char playerInput;
+            char[] validResponses = {'y', 'n'};
+            do
+            {
+                Console.WriteLine(displayAction);
+                playerInput = Char.ToLower(Console.ReadKey().KeyChar);
+                Console.WriteLine();
+            }
+            while (!validResponses.Contains(playerInput));
+
+            return playerInput;
         }
     }
 }
