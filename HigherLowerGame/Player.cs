@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace HigherLowerGame
 {
+    [Serializable]
     public class Player
     {
         public string PlayerName { get; set; }
@@ -20,8 +23,5 @@ namespace HigherLowerGame
             DateTime now = DateTime.Now;
             return now;
         }
-
     }
-
-
 }

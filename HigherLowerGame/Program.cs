@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml.Schema;
 
 namespace HigherLowerGame
 {
@@ -67,10 +70,14 @@ namespace HigherLowerGame
                 {
                     Console.Clear();
                     Console.WriteLine($"Game Over. Final Score: {score}");
-                    Player player = PlayerDetails(score, Player.GetDateTime());
-                    filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\SoftwareEngCoursework\HigherLowerGame\HigherLowerGame\bin\Debug\PlayerScores.txt";
-                    addRecord(player.PlayerName, player.PlayerScore, player.Date, filePath);
-                    dispalyHighScore(filePath);
+                    if (score > 0)
+                    {
+                        filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\SoftwareEngCoursework\HigherLowerGame\HigherLowerGame\bin\Debug\PlayerScores.bin";
+                        addRecord(PlayerRecord(score, Player.GetDateTime()), filePath);
+                        DeserailizePlayerScores(filePath);
+                        displayHighScore(DeserailizePlayerScores(filePath));
+                    }
+                    
                 }
             }
             PlayGame();
@@ -107,54 +114,78 @@ namespace HigherLowerGame
             }
             return output;
         }
-
-        static Player PlayerDetails(int score, DateTime dateTime)
+        
+        static Player PlayerRecord(int score, DateTime dateTime)
         {
-            Console.Write("Enter your name: ");
+            string display = "Enter your name: ";
+            Console.Write(display);
             string name = Console.ReadLine();
             Player player = new Player(name, score, dateTime);
+            displayPlayerScore(player);
+            return player;
+        }
+
+        
+        static void displayPlayerScore (Player player)
+        {
             Console.WriteLine();
             string header = "Player Name     Player Score       Date/Time";
             Console.WriteLine(header);
             Console.WriteLine($"Player Score: " +
-                $"\n{player.PlayerName}            " +
-                $"{player.PlayerScore}              " +
-                $"{player.Date}");
-            return player;
+            $"\n{player.PlayerName}            " +
+            $"{player.PlayerScore}              " +
+            $"{player.Date}");
+        }
+   
+
+        static void addRecord(Player playerRecord, string filePath)
+        {
+            FileStream playerScoresData = new FileStream(filePath, FileMode.Append, FileAccess.Write);
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(playerScoresData, playerRecord); 
+            playerScoresData.Close();
         }
 
-        static void addRecord(string playerName, int playerScore, DateTime dateTime, string filePath)
+        static List<Player> DeserailizePlayerScores(string filePath)
         {
-            if(playerScore > 0)
+            List<Player> players = new List<Player>();
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream playerScoresData = new FileStream(filePath, FileMode.Open);
+            // Code to read all objects in the binary file
+            // ChatGPT
+            // https://chat.openai.com/chat
+            // [Accessed 31/12/2022]
+            while (playerScoresData.Position < playerScoresData.Length)
             {
-                StreamWriter newRecord = new StreamWriter(filePath, true);
-                newRecord.WriteLine($"{playerName}, {playerScore}, {dateTime}");
-                newRecord.Close();
+                Player playersScores = (Player)formatter.Deserialize(playerScoresData);
+                players.Add(playersScores);
             }
+            playerScoresData.Close();
+            return players;  
         }
 
-        static void dispalyHighScore(string filepath)
+        
+        static void displayHighScore(List<Player> playersScores)
         {
-            string[] playerScores = File.ReadAllLines(filepath);
             List<string> playerName = new List<string>();
             List<int> playerScore = new List<int>();
             List<DateTime> dateTime = new List<DateTime>();
-        
-            for (int i = 2; i < playerScores.Length; i++)
+            
+            foreach(Player player in playersScores)
             {
-                string[] rowData = playerScores[i].Split(',');
-                playerName.Add(rowData[0]);
-                playerScore.Add(Convert.ToInt32(rowData[1]));
-                dateTime.Add(Convert.ToDateTime(rowData[2]));
+                playerName.Add(player.PlayerName);
+                playerScore.Add(player.PlayerScore);
+                dateTime.Add(player.Date);
             }
-
-            int indexNumberOfMaxScore = playerScore.IndexOf(playerScore.Max());
+            
+            int maxScore = playerScore.Max();
+            int indexNumberOfMaxScore = playerScore.IndexOf(maxScore);
             Console.WriteLine($"High Score: " +
                 $"\n{playerName[indexNumberOfMaxScore]}        " +
                 $"{playerScore[indexNumberOfMaxScore]}         " +
                 $"{dateTime[indexNumberOfMaxScore]}");
         }
-
+        
         static char VaidateAnswerInput(string displayAction)
         {
             char playerInput;
