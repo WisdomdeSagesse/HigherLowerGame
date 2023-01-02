@@ -13,21 +13,13 @@ namespace HigherLowerGame
         const int defaultScore = 0;
         static void Main(string[] args)
         {
-            string filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\IMDB Top 250 Movies.csv";
-            string[] movieList = File.ReadAllLines(filePath);
-            List<int> rank = new List<int>();
-            List<string> title = new List<string>();
-            List<int> year = new List<int>();
-
-            for (int i = 1; i < movieList.Length; i++)
-            {
-                string[] rowData = movieList[i].Split(','); // Split the data contained in each row by the comma delimiter
-                rank.Add(int.Parse(rowData[0]));
-                title.Add(rowData[1]);
-                year.Add(int.Parse(rowData[2]));
-            }
+            gameIntro();
             void PlayGame(int score)
             {
+                string filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\IMDB Top 250 Movies.csv";
+                List<int> rank = ParseCSVFile(filePath).movieRanks;
+                List<string> title = ParseCSVFile(filePath).movieTitles;
+                List<int> year = ParseCSVFile(filePath).releaseYears;
                 Movie optionB = PickMovie(rank, title, year);
                 bool endGame = false;
                 while (!endGame)
@@ -38,7 +30,7 @@ namespace HigherLowerGame
                     {
                         optionB = PickMovie(rank, title, year);
                     }
-                    while (optionA == optionB);
+                    while (optionA.MovieRank == optionB.MovieRank);
 
                     Console.WriteLine($"Compare A: {optionA.MovieTitle} released in {optionA.ReleaseYear}" +
                         "\nVS" +
@@ -92,33 +84,97 @@ namespace HigherLowerGame
 
         }
 
+        static void displayGameArt()
+        {
+            string filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\GameArt.txt";
+            if(!File.Exists(filePath))
+            {
+                throw new Exception("Game art does not exist");
+            }
+            else 
+            {
+                StreamReader gameArt = new StreamReader(filePath);
+                string display = gameArt.ReadToEnd();
+                Console.WriteLine(display);
+                gameArt.Close();
+            }
+        }
+
+        static void gameIntro()
+        {
+            displayGameArt();   
+            Console.WriteLine("Welcome to the IMDB Top 250 Higher/Lower Game" +
+                "\nTwo movie options will be displayed to you" +
+                "\nSelect if the second movie option has a higher or lower rating compared to the first movie option");
+
+            //Code to time the dsiplay of the game introductory message :
+            //"Console.Clear() after a timeout", Ofiris, 19/04/2013
+            //https://stackoverflow.com/questions/16109055/console-clear-after-a-timeout
+            //[Accessed 02/01/2023]
+            System.Threading.Thread.Sleep(5000);
+            Console.Clear();
+        }
+
         static int GenerateRandomNumber()
         {
             int randomNumber = random.Next(numberOfMovies);
             return randomNumber;
         }
 
-        static Movie PickMovie(List<int> rank, List<string> title, List<int> year)
+
+        //Code to return mutliple values in a method taken from:
+        //"Return multiple values to a method caller", Francisco Noriega, 03/08/2018
+        //https://stackoverflow.com/questions/748062/return-multiple-values-to-a-method-caller/36436255#36436255
+        //[Accessed 13/12/2022]
+        static (List<int> movieRanks, List<string> movieTitles, List<int> releaseYears) ParseCSVFile(string filePath)
+        {
+            List<int> movieRanks = new List<int>();
+            List<string> movieTitles = new List<string>();
+            List<int> releaseYears = new List<int>();
+            if (!File.Exists(filePath))
+            {
+                throw new Exception("Movie File does not exist");
+            }
+            else 
+            {
+                string[] movieList = File.ReadAllLines(filePath);
+                for (int i = 1; i < movieList.Length; i++)
+                {
+                    char delimiter = ',';
+                    string[] rowData = movieList[i].Split(delimiter); // Split the data contained in each row by the comma delimiter
+                    movieRanks.Add(int.Parse(rowData[0]));
+                    movieTitles.Add(rowData[1]);
+                    releaseYears.Add(int.Parse(rowData[2]));
+                }
+            }
+            return (movieRanks, movieTitles, releaseYears); 
+            
+        }
+        
+
+    static Movie PickMovie(List<int> rank, List<string> title, List<int> year)
         {
             int randomNumber = GenerateRandomNumber();
             Movie movie = new Movie(rank[randomNumber], title[randomNumber], year[randomNumber]);
             return movie;
         }
 
+
         static bool CompareAnswer(int movieARank, int movieBRank)
         {
-            string display = "Which movie has a higher IMDB rank. Type A or B: ";
+            string display = "Does 'Movie B' have a Higher or Hower rating compared to 'Movie A'. " +
+                             "Type H for Higher or L for Lower: ";
             char playerInput = VaidateAnswerInput(display);
             Console.WriteLine();
             Console.WriteLine();
             bool output;
-            if (playerInput == 'a')
+            if (playerInput == 'h')
             {
-                output = movieARank < movieBRank;
+                output = movieBRank < movieARank;
             }
             else
             {
-                output = movieBRank < movieARank;
+                output = movieARank < movieBRank;
             }
             return output;
         }
@@ -197,7 +253,7 @@ namespace HigherLowerGame
         static char VaidateAnswerInput(string displayAction)
         {
             char playerInput;
-            char[] validResponses = {'a', 'b'};
+            char[] validResponses = {'h', 'l'};
             do
             {
                 Console.WriteLine(displayAction);
