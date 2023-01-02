@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Xml.Schema;
 
 namespace HigherLowerGame
 {
@@ -13,6 +10,7 @@ namespace HigherLowerGame
     {
         static Random random = new Random();
         const int numberOfMovies = 250;
+        const int defaultScore = 0;
         static void Main(string[] args)
         {
             string filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\IMDB Top 250 Movies.csv";
@@ -28,10 +26,9 @@ namespace HigherLowerGame
                 title.Add(rowData[1]);
                 year.Add(int.Parse(rowData[2]));
             }
-            void PlayGame()
+            void PlayGame(int score)
             {
                 Movie optionB = PickMovie(rank, title, year);
-                int score = 0;
                 bool endGame = false;
                 while (!endGame)
                 {
@@ -59,12 +56,23 @@ namespace HigherLowerGame
                         endGame = true;
                     }
                 }
-                string display = "Do you wish to play again? Enter 'Y' for yes and 'N' for NO: ";
+                string display = "Do you wish to play again? " +
+                    "\nEnter 'Y' to play a new game" +
+                    "\nEnter 'X' to continue from last score" +
+                    "\nEnter 'N' to end game: ";
                 char response = VaidateReplayGameInput(display);
                 if (response == 'y')
                 {
                     Console.Clear();
-                    PlayGame();
+                    PlayGame(defaultScore); 
+                }
+                else if(response == 'x')
+                {
+                    filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\SoftwareEngCoursework\HigherLowerGame\HigherLowerGame\bin\Debug\SavedScore.bin";
+                    Console.Clear();
+                    autoGameSave(score, filePath);
+                    int savedScore = LoadAutoGameSave(filePath);
+                    PlayGame(savedScore);
                 }
                 else
                 {
@@ -80,7 +88,7 @@ namespace HigherLowerGame
                     
                 }
             }
-            PlayGame();
+            PlayGame(defaultScore);
 
         }
 
@@ -203,7 +211,7 @@ namespace HigherLowerGame
         static char VaidateReplayGameInput(string displayAction)
         {
             char playerInput;
-            char[] validResponses = {'y', 'n'};
+            char[] validResponses = {'y', 'x', 'n'};
             do
             {
                 Console.WriteLine(displayAction);
@@ -213,6 +221,24 @@ namespace HigherLowerGame
             while (!validResponses.Contains(playerInput));
 
             return playerInput;
+        }
+
+        static void autoGameSave(int score, string filePath)
+        {
+            FileStream autoSaveFile = new FileStream(filePath, FileMode.Create);
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(autoSaveFile, score);
+            autoSaveFile.Close();
+        }
+
+        static int LoadAutoGameSave(string filePath)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream autoSaveFile = new FileStream(filePath, FileMode.Open);
+            int savedScore = (int)formatter.Deserialize(autoSaveFile);
+            autoSaveFile.Close();
+            Console.WriteLine(savedScore);
+            return savedScore;
         }
     }
 }
