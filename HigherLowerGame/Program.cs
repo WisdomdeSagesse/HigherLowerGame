@@ -84,6 +84,10 @@ namespace HigherLowerGame
 
         }
 
+
+        /*
+         This proceedure reads the contents of a txt file containing the game art and dispalys it to the console.
+         */
         static void displayGameArt()
         {
             string filePath = @"C:\Users\User\OneDrive\NTU Documents\Software Engineering Coursework\GameArt.txt";
@@ -100,6 +104,10 @@ namespace HigherLowerGame
             }
         }
 
+
+        /*
+         This proceedure displays the game introduction and instructions to the console.
+         */
         static void gameIntro()
         {
             displayGameArt();   
@@ -115,12 +123,27 @@ namespace HigherLowerGame
             Console.Clear();
         }
 
+
+        /*
+         This function generates a random integer from the total number of movies.
+         Returns:
+         A random integer between 0 and 249
+         */
         static int GenerateRandomNumber()
         {
             int randomNumber = random.Next(numberOfMovies);
             return randomNumber;
         }
 
+
+        /*
+         This function parses a CSV file containing the list of IMDB's top 250 movies and returns lists containing the ranks,
+         titles and release years of the movies.
+         Parameters: 
+         string filePath - The CSV filepath.
+         Returns:
+         Three lists containing the ranks titles and release years of the movies.
+         */
 
         //Code to return mutliple values in a method taken from:
         //"Return multiple values to a method caller", Francisco Noriega, 03/08/2018
@@ -150,9 +173,20 @@ namespace HigherLowerGame
             return (movieRanks, movieTitles, releaseYears); 
             
         }
-        
 
-    static Movie PickMovie(List<int> rank, List<string> title, List<int> year)
+
+        /*
+         This function passes the random number returned from the GenerateRandomNumber() function as the index number into the Lists,
+         returned from the ParseCSVFile() function to create a new instance of the Movie class object.
+         titles and release years of the movies.
+         Parameters: 
+         List<int> rank - A list conataining the movie ranks.
+         List<string> title - A list containing the movie titles.
+         List<int> year - A list containing the movie release years.
+         Returns:
+         A new instance of the Movie class object.
+         */
+        static Movie PickMovie(List<int> rank, List<string> title, List<int> year)
         {
             int randomNumber = GenerateRandomNumber();
             Movie movie = new Movie(rank[randomNumber], title[randomNumber], year[randomNumber]);
@@ -160,6 +194,14 @@ namespace HigherLowerGame
         }
 
 
+        /*
+         This function compares the player's input against a movie ranks and returns a true or false boolean value
+         Parameters: 
+         int movieARank - Rank of movieA
+         int movieBRank - Rank of movieB
+         Returns:
+         A true or false value.
+         */
         static bool CompareAnswer(int movieARank, int movieBRank)
         {
             string display = "Does 'Movie B' have a Higher or Hower rating compared to 'Movie A'. " +
@@ -178,7 +220,16 @@ namespace HigherLowerGame
             }
             return output;
         }
-        
+
+
+        /*
+         This function creates a new instance of the Player class object
+         Parameters: 
+         int score - The player's final score
+         DateTime dateTime - The datetime at the end of the current iteration of gameplay.
+         Returns:
+         A new instance of the Player class object.
+         */
         static Player PlayerRecord(int score, DateTime dateTime)
         {
             string display = "Enter your name: ";
@@ -189,7 +240,11 @@ namespace HigherLowerGame
             return player;
         }
 
-        
+        /*
+         This proceedure dispalys the player name score and datetime to the console
+         Parameters: 
+         Player player - Current instance of the Player class object.
+         */
         static void displayPlayerScore (Player player)
         {
             Console.WriteLine();
@@ -199,9 +254,16 @@ namespace HigherLowerGame
             $"\n{player.PlayerName}            " +
             $"{player.PlayerScore}              " +
             $"{player.Date}");
+            Console.WriteLine();
         }
-   
 
+
+        /*
+         This proceedure serializes the record of the player to a bin file. New records are appended to the end of the file.
+         Parameters: 
+         Player playerRecord - Current instance of the Player class object.
+         string filePath - File path of the bin file.
+         */
         static void addRecord(Player playerRecord, string filePath)
         {
             FileStream playerScoresData = new FileStream(filePath, FileMode.Append, FileAccess.Write);
@@ -210,6 +272,14 @@ namespace HigherLowerGame
             playerScoresData.Close();
         }
 
+
+        /*
+         This function deserializes the player records conatined in a bin file and passes it into a list.
+         Parameters: 
+         string filePath - File path of the bin file.
+         Returns:
+         A list containing the player records.
+         */
         static List<Player> DeserailizePlayerScores(string filePath)
         {
             List<Player> players = new List<Player>();
@@ -228,7 +298,14 @@ namespace HigherLowerGame
             return players;  
         }
 
-        
+
+        /*
+         This proceedure parses the player records contained in the list returened from the DeserializePlayersScores() funtion,
+         and passes them into lists containing player names, scores and datetimes. The list of players scores in evaluated to
+         find the max score and record of the player with the max score is displayed to the console.
+         Parameters: 
+         List<Player> - playerScores - List containing the player records.
+         */
         static void displayHighScore(List<Player> playersScores)
         {
             List<string> playerName = new List<string>();
@@ -249,14 +326,22 @@ namespace HigherLowerGame
                 $"{playerScore[indexNumberOfMaxScore]}         " +
                 $"{dateTime[indexNumberOfMaxScore]}");
         }
-        
+
+
+        /*
+         This function validates the players input and returns a valid input
+         Parameters: 
+         string display - A prompt asking the player to enter an input
+         Returns:
+         A vaild player input.
+         */
         static char VaidateAnswerInput(string displayAction)
         {
             char playerInput;
             char[] validResponses = {'h', 'l'};
             do
             {
-                Console.WriteLine(displayAction);
+                Console.Write(displayAction);
                 playerInput = Char.ToLower(Console.ReadKey().KeyChar);
                 Console.WriteLine();
             }
@@ -264,13 +349,21 @@ namespace HigherLowerGame
            
             return playerInput;
         }
+
+        /*
+        This function validates the players input and returns a valid input
+         Parameters: 
+         string display - A prompt asking the player to enter an input
+         Returns:
+         A vaild player input.
+        */
         static char VaidateReplayGameInput(string displayAction)
         {
             char playerInput;
             char[] validResponses = {'y', 'x', 'n'};
             do
             {
-                Console.WriteLine(displayAction);
+                Console.Write(displayAction);
                 playerInput = Char.ToLower(Console.ReadKey().KeyChar);
                 Console.WriteLine();
             }
@@ -279,6 +372,12 @@ namespace HigherLowerGame
             return playerInput;
         }
 
+        /*
+         This proceedure serializes the score of the player to a bin file.
+         Parameters: 
+         int score - The player's final score at the current gamplay instance.
+         string filePath - File path of the bin file.
+         */
         static void autoGameSave(int score, string filePath)
         {
             FileStream autoSaveFile = new FileStream(filePath, FileMode.Create);
@@ -287,6 +386,14 @@ namespace HigherLowerGame
             autoSaveFile.Close();
         }
 
+
+        /*
+         This function deserializes the player's scores conatined in a bin file.
+         Parameters: 
+         string filePath - File path of the bin file.
+         Returns:
+         An integer - the player's final score at the current gameplay instance.
+         */
         static int LoadAutoGameSave(string filePath)
         {
             BinaryFormatter formatter = new BinaryFormatter();
