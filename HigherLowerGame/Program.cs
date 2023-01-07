@@ -388,7 +388,7 @@ namespace HigherLowerGame
 
 
         /*
-         This function deserializes the player's scores conatined in a bin file.
+         This function deserializes the player's score contained in a bin file.
          Parameters: 
          string filePath - File path of the bin file.
          Returns:
